@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
+import { useGesture } from '@use-gesture/react';
 
 export type Camera = {
   pitch: number;
@@ -8,41 +9,32 @@ export type Camera = {
 
 export const useCamera = (): {
   camera: Camera;
-  events: {
-    onMouseDown: (e: React.MouseEvent) => void;
-    onMouseUp: (e: React.MouseEvent) => void;
-    onMouseLeave: (e: React.MouseEvent) => void;
-    onMouseMove: (e: React.MouseEvent) => void;
-    onWheel: (e: React.WheelEvent) => void;
-  };
+  events: React.DOMAttributes<SVGSVGElement>;
 } => {
-  const mouseDown = useRef(false);
   const [pitch, setPitch] = useState(-Math.PI / 4);
   const [yaw, setYaw] = useState((-3 * Math.PI) / 4);
   const [distance, setDistance] = useState(20);
 
-  const onMouseDown = (e: React.MouseEvent) => {
-    mouseDown.current = true;
-  };
-
-  const onMouseUp = (e: React.MouseEvent) => {
-    mouseDown.current = false;
-  };
-
-  const onMouseMove = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    if (mouseDown.current) {
-      setPitch(pitch + e.movementY * 0.01);
-      setYaw(yaw + e.movementX * 0.01);
-    }
-  };
-
-  const onWheel = (e: React.WheelEvent) => {
-    setDistance((prev) =>
-      Math.max(3, prev + 0.05 * (e.deltaY > 0 ? 1 : -1) * prev)
-    );
-  };
+  const bind = useGesture({
+    onPinch: ({ first, memo, movement: [d] }) => {
+      if (first) {
+        return distance; // record initial distance in a memo
+      }
+      setDistance(memo / d); // change zoom level when pinching
+    },
+    onWheel: ({ delta: [, d] }) => {
+      if (d !== 0) {
+        setDistance((prev) =>
+          Math.max(3, prev + 0.05 * (d > 0 ? 1 : -1) * prev)
+        );
+      }
+    },
+    onDrag: ({ pinching, cancel, delta: [x, y] }) => {
+      if (pinching) return cancel();
+      setPitch(pitch + y * 0.01);
+      setYaw(yaw - x * 0.01);
+    },
+  });
 
   return {
     camera: {
@@ -50,12 +42,6 @@ export const useCamera = (): {
       yaw,
       distance,
     },
-    events: {
-      onMouseDown,
-      onMouseUp,
-      onMouseMove,
-      onMouseLeave: onMouseUp,
-      onWheel,
-    },
+    events: bind(),
   };
 };

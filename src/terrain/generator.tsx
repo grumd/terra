@@ -73,24 +73,26 @@ export const shiftTerrain = ({
   width: number;
   height: number;
 }) => {
-  return (
-    generateTerrain({
-      width,
-      height,
-      initialTerrain: [
-        ...terrain.slice(width).map((tile, index) => ({
-          possibleIds: [tile.tileId],
-          index,
-        })),
-        ...Array.from({ length: width }).map((_, index) => ({
-          possibleIds:
-            tiles[terrain[terrain.length - width + index].tileId]
-              .allowedNeighborIds,
-          index: terrain.length - width + index,
-        })),
-      ].map((tile, index) => ({ ...tile, index })),
-    }) ?? []
-  );
+  if (!width || !height) {
+    return [];
+  }
+
+  return generateTerrain({
+    width,
+    height,
+    initialTerrain: [
+      ...terrain.slice(width).map((tile, index) => ({
+        possibleIds: [tile.tileId],
+        index,
+      })),
+      ...Array.from({ length: width }).map((_, index) => ({
+        possibleIds:
+          tiles[terrain[terrain.length - width + index].tileId]
+            .allowedNeighborIds,
+        index: terrain.length - width + index,
+      })),
+    ].map((tile, index) => ({ ...tile, index })),
+  });
 };
 
 export const getEmptyTerrainState = (length: number) => {
@@ -111,6 +113,8 @@ export const generateTerrain = ({
   height: number;
   initialTerrain?: TerrainTileState[];
 }): Tile[] => {
+  if (!width || !height) return [];
+
   const terrain: TerrainTileState[] =
     initialTerrain ?? getEmptyTerrainState(width * height);
 

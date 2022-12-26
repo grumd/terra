@@ -1,26 +1,11 @@
 import { useMemo } from 'react';
 import type { Polygon, ProjectedPolygon } from 'types';
+
 import { useCameraPosition } from './useCameraPosition';
 import type { Camera } from './useCamera';
-import { multiply } from 'utils/matrix';
 
-const hideInvisiblePolygons = ({
-  polygon,
-  cameraX,
-  cameraY,
-  cameraZ,
-}: {
-  polygon: Polygon;
-  cameraX: number;
-  cameraY: number;
-  cameraZ: number;
-}) => {
-  return (
-    polygon.normalVector.x * (cameraX - polygon.points[0].x) <= 0 &&
-    polygon.normalVector.y * (cameraY - polygon.points[0].y) <= 0 &&
-    polygon.normalVector.z * (cameraZ - polygon.points[0].z) <= 0
-  );
-};
+import { multiply } from 'utils/matrix';
+import { notNull } from 'utils/notNull';
 
 const projectPolygon = ({
   polygon,
@@ -40,7 +25,16 @@ const projectPolygon = ({
   sx: number;
   sz: number;
   cz: number;
-}): ProjectedPolygon => {
+}): ProjectedPolygon | null => {
+  // Hide polygons facing away from camera according to normal vector (naive version)
+  if (
+    polygon.normalVector.x * (cameraX - polygon.points[0].x) > 0 ||
+    polygon.normalVector.y * (cameraY - polygon.points[0].y) > 0 ||
+    polygon.normalVector.z * (cameraZ - polygon.points[0].z) > 0
+  ) {
+    return null;
+  }
+
   const projectedPoints = polygon.points.map((point) => {
     const x = point.x - cameraX;
     const y = point.y - cameraY;
@@ -68,6 +62,11 @@ const projectPolygon = ({
       z: rotatedZ,
     };
   });
+
+  // Hide points behind the camera
+  if (projectedPoints.some((point) => point.z > 0)) {
+    return null;
+  }
 
   let sum = projectedPoints[0].z;
   let zIndexMin = projectedPoints[0].z;
@@ -105,14 +104,6 @@ export const usePerspectiveProjection = ({
     const sz = Math.sin(-pitch);
 
     const projected = polygons
-      .filter((polygon) =>
-        hideInvisiblePolygons({
-          polygon,
-          cameraX,
-          cameraY,
-          cameraZ,
-        })
-      )
       .map((polygon) =>
         projectPolygon({
           polygon,
@@ -124,7 +115,8 @@ export const usePerspectiveProjection = ({
           sz,
           cz,
         })
-      );
+      )
+      .filter(notNull);
 
     projected.sort((a, b) => a.zIndexAvg - b.zIndexAvg);
 

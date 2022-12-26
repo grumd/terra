@@ -13,24 +13,30 @@
   align-items: center;
 }
 
-.App > svg {
+.App svg {
   position: fixed;
   inset: 0;
+  z-index: 0;
+  touch-action: none;
 }
 
 .App > header {
   display: flex;
   align-items: center;
+  flex-flow: row wrap;
   gap: 1rem;
   padding: 1rem;
+  z-index: 1;
+  background-color: #242424;
+  border-radius: 0.4em;
 }
 
-.App > header > input {
-  width: 4em;
+.App > header label {
+  display: flex;
+  align-items: center;
 }
 
-.svg-canvas-container {
-  width: 100%;
-  flex: 1 1 0px;
-  overflow: hidden;
+.App > header label input {
+  margin-left: 0.5rem;
+  width: 3em;
 }
