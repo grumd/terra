@@ -1,13 +1,6 @@
-export const tiles: Record<
-  string,
-  {
-    z: number;
-    height: number;
-    stroke: string;
-    fill: string;
-    allowedNeighborIds: string[];
-  }
-> = {
+import type { TileId } from './types';
+
+export const tiles = {
   '-2': {
     // deep water
     z: -1,
@@ -54,15 +47,15 @@ export const tiles: Record<
     height: 0.25,
     stroke: '#7CFC00',
     fill: 'green',
-    allowedNeighborIds: ['2', '3', '3.1', '4'],
+    allowedNeighborIds: ['2', '3', '3.5', '4'],
   },
-  '3.1': {
+  '3.5': {
     // dark grass
     z: 0.25,
     height: 0.5,
     stroke: 'green',
     fill: 'darkgreen',
-    allowedNeighborIds: ['3', '3.1', '4'],
+    allowedNeighborIds: ['3', '3.5', '4'],
   },
   '4': {
     // dirt
@@ -70,7 +63,7 @@ export const tiles: Record<
     height: 0.5,
     stroke: '#9b7653',
     fill: '#503915',
-    allowedNeighborIds: ['3', '4', '3.1', '5'],
+    allowedNeighborIds: ['3', '4', '3.5', '5'],
   },
   '5': {
     // mountain
@@ -88,4 +81,13 @@ export const tiles: Record<
     fill: '#aed4e0',
     allowedNeighborIds: ['6', '5'],
   },
-};
+} satisfies Record<
+  TileId,
+  {
+    z: number;
+    height: number;
+    stroke: string;
+    fill: string;
+    allowedNeighborIds: TileId[];
+  }
+>;

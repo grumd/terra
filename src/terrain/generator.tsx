@@ -98,7 +98,9 @@ export const shiftTerrain = ({
 export const getEmptyTerrainState = (length: number) => {
   return Array.from({ length }).map(
     (_, index): TerrainTileState => ({
-      possibleIds: Object.entries(tiles).map(([id]) => id),
+      possibleIds: Object.entries(tiles).map(
+        ([id]) => id as keyof typeof tiles
+      ),
       index,
     })
   );

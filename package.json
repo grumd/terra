@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "host": "serve -l 3000 -s ./dist",
     "predeploy": "npm run build",
+    "ts": "tsc",
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
